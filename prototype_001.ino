@@ -1,10 +1,10 @@
 #include <Usb.h>
 #include <AndroidAccessory.h>
+#include <stdint.h>
 #include "packet.h"
+#include "board.h"
 
-#define  LED_RED       12
-
-AndroidAccessory adk("Kingyoung co. ltd.", "unnamed", "unnamed product", "0.1", "http://www.kingyoung.com.tw", "0000000000000001");
+AndroidAccessory adk("Kingyoung co. ltd.", "gpio_prototype_01", "GPIO accessory prototype 01", "0.1", "http://www.kingyoung.com.tw", "0000000000000001");
 /*
 USB Usb;
 ADK adk(&Usb, "Google, Inc.",
@@ -17,53 +17,32 @@ ADK adk(&Usb, "Google, Inc.",
 void setup();
 void loop();
 
-
-void init_leds()
-{
-  digitalWrite(LED_RED, 1);
-  pinMode(LED_RED, OUTPUT);
-}
-
 void setup()
 {
+  init_pins();
   Serial.begin(115200);
   Serial.print("\n");
   Serial.print("Start\n");
-  init_leds();
-  /*while (Usb.Init() == -1) {
-    Serial.print("\r\nOSCOKIRQ failed to assert");
-    delay(1000);
-  }*/
   adk.powerOn();
   Serial.print("Initial setup complete.\n");
 }
-
-
-int process_packet(cmd_packet *packet){
-  switch(packet->type){
-    
-  }
-}
-
-int read_packet(AndroidAccessory* adk, cmd_packet *packet){
-  uint8_t msg[MAX_PACKET_SIZE];
-  adk->read(msg, 2);
-  packet->type = msg[0];
-  packet->length = msg[1];
-  adk->read(packet->data, packet->length);
-}
+bool connect_status = false;
 
 void loop()
 {
   if(adk.isConnected()) {
-    uint8_t msg[1];
-    uint16_t len = adk.read(msg, sizeof(msg), 1);
-    if(len > 0) {
-      Serial.print(F("\r\nData Packet: "));
-      Serial.print(msg[0]);
+    if(!connect_status){
+      Serial.print("Connected.\n");
+      connect_status=true;
     }
-  } 
-  else{
+    cmd_packet packet;
+    read_packet(&adk, &packet);
+    process_packet(&packet);
+  }else{
+    if(connect_status){
+      Serial.print("Disconnected.\n");
+      connect_status=false;
+    }
   }
 }
 
