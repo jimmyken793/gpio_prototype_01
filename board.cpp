@@ -1,5 +1,6 @@
 #include "board.h"
 #include "Arduino.h"
+#include "packet.h"
 
 
 
@@ -50,4 +51,17 @@ void unreg_pin(uint8_t pin){
     }
   }
   pin_status[pin]=STATUS_UNREGISTERED;
+}
+
+
+void send_status(AndroidAccessory* adk){
+  cmd_packet p;
+  p.type = TYPE_VALUE;
+  p.length = 2;
+  for(uint8_t i=0;i<input_pins_count;i++){
+    uint8_t val = digitalRead(input_pins[i]);
+    p.data[0] = input_pins[i];
+    p.data[1] = val;
+    write_packet(adk, &p);
+  } 
 }

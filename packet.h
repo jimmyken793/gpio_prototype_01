@@ -21,6 +21,7 @@ typedef struct{
 } cmd_packet;
 
 int read_packet(AndroidAccessory* adk, cmd_packet *packet);
+int write_packet(AndroidAccessory* adk, cmd_packet *packet);
 int process_packet(cmd_packet *packet);
 
 #endif
